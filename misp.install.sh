@@ -75,7 +75,9 @@ git submodule update --init --recursive
 git submodule foreach --recursive git config core.filemode false
 
 # install Mitre's STIX and its dependencies by running the following commands:
-yum install python-importlib python-lxml python-dateutil python-six -y
+#yum install python-importlib python-lxml python-dateutil python-six -y
+yum install python-lxml python-dateutil python-six -y
+
 cd /var/www/MISP/app/files/scripts
 git clone https://github.com/CybOXProject/python-cybox.git
 git clone https://github.com/STIXProject/python-stix.git
