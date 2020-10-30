@@ -14,6 +14,7 @@
 hostnamectl set-hostname misp.local
 
 # system update
+yum clean all
 yum update -y
 
 # install epel
@@ -127,9 +128,14 @@ sudo -u apache $RUN_PHP "php composer.phar config vendor-dir Vendor"
 sudo -u apache $RUN_PHP "php composer.phar install"
 
 # CakeResque normally uses phpredis to connect to redis, but it has a (buggy) fallback connector through Redisent. It is highly advised to install phpredis using "yum install php-redis"
-$RUN_PHP "pecl install redis"
-echo "extension=redis.so" | tee /etc/opt/rh/rh-php72/php-fpm.d/redis.ini
-ln -s ../php-fpm.d/redis.ini /etc/opt/rh/rh-php72/php.d/99-redis.ini
+#$RUN_PHP "pecl install redis"
+#echo "extension=redis.so" | tee /etc/opt/rh/rh-php72/php-fpm.d/redis.ini
+#ln -s ../php-fpm.d/redis.ini /etc/opt/rh/rh-php72/php.d/99-redis.ini
+
+ ## sudo yum install php-redis -y
+sudo scl enable rh-php72 'pecl channel-update pecl.php.net'
+sudo scl enable rh-php72 'yes no|pecl install redis'
+echo "extension=redis.so" |sudo tee /etc/opt/rh/rh-php72/php.d/99-redis.ini
 systemctl restart rh-php72-php-fpm.service
 
 # If you have not yet set a timezone in php.ini
