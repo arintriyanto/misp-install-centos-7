@@ -181,7 +181,10 @@ systemctl start  mariadb.service
 
 # If you want to continue copy pasting set the MySQL root password to $DBPASSWORD_ADMIN
 echo $DBPASSWORD_ADMIN
-mysql_secure_installation
+#mysql_secure_installation
+# DB Security setting
+sed -i -e "s/mysql_secure_installation/yum install expect -y\nexpect -c \"\nset timeout 5\nspawn mysql_secure_installation\nexpect \\\\\"Enter current password for root\\\\\"\nsend \\\\\"\\\n\\\\\"\nexpect \\\\\"Set root password\\\\\"\nsend \\\\\"y\\\n\\\\\"\nexpect \\\\\"New password\\\\\"\nsend \\\\\"\${DBPASSWORD_ADMIN}\\\n\\\\\"\nexpect \\\\\"Re-enter new password\\\\\"\nsend \\\\\"\${DBPASSWORD_ADMIN}\\\n\\\\\"\nexpect \\\\\"Remove anonymous users\\\\\"\nsend \\\\\"y\\\n\\\\\"\nexpect \\\\\"Disallow root login remotely\\\\\"\nsend \\\\\"y\\\n\\\\\"\nexpect \\\\\"Remove test database and access to it\\\\\"\nsend \\\\\"y\\\n\\\\\"\nexpect \\\\\"Reload privilege tables now\\\\\"\nsend \\\\\"y\\\n\\\\\"\nexpect \\'$\\\\\"\nexit 0\n\"/g" misp.install.sh
+
 
 # Additionally, it is probably a good idea to make the database server listen on localhost only
 echo [mysqld] | tee /etc/my.cnf.d/bind-address.cnf
