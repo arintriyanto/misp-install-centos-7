@@ -33,17 +33,18 @@ yum install centos-release-scl -y
 # Install the dependencies
 yum install gcc git httpd zip redis mariadb mariadb-server python-devel python-pip python-zmq libxslt-devel zlib-devel -y
 
-# Install PHP 5.6 from SCL, see https://www.softwarecollections.org/en/scls/rhscl/rh-php56/
-yum install rh-php56 rh-php56-php-fpm rh-php56-php-devel rh-php56-php-mysqlnd rh-php56-php-mbstring rh-php56-php-xml rh-php56-php-bcmath rh-php56-php-opcache -y
+# Install PHP 5.6 from SCL, see https://www.softwarecollections.org/en/scls/rhscl/rh-php72/
+yum install rh-php72 rh-php72-php-fpm rh-php72-php-devel rh-php72-php-mysqlnd rh-php72-php-mbstring rh-php72-php-xml rh-php72-php-bcmath rh-php72-php-opcache -y
+
 
 # Install Python 3.6 from SCL, see
 # https://www.softwarecollections.org/en/scls/rhscl/rh-python36/
 yum install rh-python36 -y
 
-# rh-php56-php only provided mod_php for httpd24-httpd from SCL
-# if we want to use httpd from CentOS base we can use rh-php56-php-fpm instead
-systemctl enable rh-php56-php-fpm.service
-systemctl start  rh-php56-php-fpm.service
+# rh-php72-php only provided mod_php for httpd24-httpd from SCL
+# if we want to use httpd from CentOS base we can use rh-php72-php-fpm instead
+systemctl enable rh-php72-php-fpm.service
+systemctl start  rh-php72-php-fpm.service
 
 $RUN_PHP "pear channel-update pear.php.net"
 $RUN_PHP "pear install Crypt_GPG"    # we need version >1.3.0
@@ -108,9 +109,9 @@ cd /var/www/MISP/PyMISP
 $RUN_PYTHON "python3 setup.py install"
 
 # Enable python3 for php-fpm
-echo 'source scl_source enable rh-python36' | tee -a /etc/opt/rh/rh-php56/sysconfig/php-fpm
-sed -i.org -e 's/^;\(clear_env = no\)/\1/' /etc/opt/rh/rh-php56/php-fpm.d/www.conf
-systemctl restart rh-php56-php-fpm.service
+echo 'source scl_source enable rh-python36' | tee -a /etc/opt/rh/rh-php72/sysconfig/php-fpm
+sed -i.org -e 's/^;\(clear_env = no\)/\1/' /etc/opt/rh/rh-php72/php-fpm.d/www.conf
+systemctl restart rh-php72-php-fpm.service
 
 umask $UMASK
 
@@ -127,24 +128,24 @@ sudo -u apache $RUN_PHP "php composer.phar install"
 
 # CakeResque normally uses phpredis to connect to redis, but it has a (buggy) fallback connector through Redisent. It is highly advised to install phpredis using "yum install php-redis"
 $RUN_PHP "pecl install redis-2.2.8"
-echo "extension=redis.so" | tee /etc/opt/rh/rh-php56/php-fpm.d/redis.ini
-ln -s ../php-fpm.d/redis.ini /etc/opt/rh/rh-php56/php.d/99-redis.ini
-systemctl restart rh-php56-php-fpm.service
+echo "extension=redis.so" | tee /etc/opt/rh/rh-php72/php-fpm.d/redis.ini
+ln -s ../php-fpm.d/redis.ini /etc/opt/rh/rh-php72/php.d/99-redis.ini
+systemctl restart rh-php72-php-fpm.service
 
 # If you have not yet set a timezone in php.ini
-echo 'date.timezone = "Europe/London"' | tee /etc/opt/rh/rh-php56/php-fpm.d/timezone.ini
-ln -s ../php-fpm.d/timezone.ini /etc/opt/rh/rh-php56/php.d/99-timezone.ini
+echo 'date.timezone = "Europe/London"' | tee /etc/opt/rh/rh-php72/php-fpm.d/timezone.ini
+ln -s ../php-fpm.d/timezone.ini /etc/opt/rh/rh-php72/php.d/99-timezone.ini
 
-# Recommended: Change some PHP settings in /etc/opt/rh/rh-php56/php.ini
+# Recommended: Change some PHP settings in /etc/opt/rh/rh-php72/php.ini
 export max_execution_time='300'
-export memory_limit='512M'
+export memory_limit='2048M'
 export upload_max_filesize='50M'
 export post_max_size='50M'
 for key in upload_max_filesize post_max_size max_execution_time max_input_time memory_limit
 do
     sed -i "s/^\($key\).*/\1 = $(eval echo \${$key})/" $PHP_INI
 done
-systemctl restart rh-php56-php-fpm.service
+systemctl restart rh-php72-php-fpm.service
 
 # To use the scheduler worker for scheduled tasks, do the following:
 cp -fa /var/www/MISP/INSTALL/setup/config.php /var/www/MISP/app/Plugin/CakeResque/Config/config.php
@@ -322,7 +323,7 @@ chmod +x /var/www/MISP/app/Console/worker/start.sh
 sudo -u apache $RUN_PHP /var/www/MISP/app/Console/worker/start.sh
 
 # To make the background workers start on boot
-echo "su -s /bin/bash apache -c 'scl enable rh-php56 /var/www/MISP/app/Console/worker/start.sh'" >> /etc/rc.local
+echo "su -s /bin/bash apache -c 'scl enable rh-php72 /var/www/MISP/app/Console/worker/start.sh'" >> /etc/rc.local
 # and make sure it will execute
 chmod +x /etc/rc.local
 
@@ -443,4 +444,4 @@ sudo $RUN_PHP "$CAKE Admin setSetting "Session.timeout" 600"
 sudo $RUN_PHP "$CAKE Admin setSetting "Session.cookie_timeout" 3600"
 
 # restart at the end to ensure config is picked up and correct
-systemctl restart rh-php56-php-fpm.service
+systemctl restart rh-php72-php-fpm.service
