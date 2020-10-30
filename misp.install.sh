@@ -127,13 +127,13 @@ sudo -u apache $RUN_PHP "php composer.phar config vendor-dir Vendor"
 sudo -u apache $RUN_PHP "php composer.phar install"
 
 # CakeResque normally uses phpredis to connect to redis, but it has a (buggy) fallback connector through Redisent. It is highly advised to install phpredis using "yum install php-redis"
-$RUN_PHP "pecl install redis-2.2.8"
+$RUN_PHP "pecl install redis"
 echo "extension=redis.so" | tee /etc/opt/rh/rh-php72/php-fpm.d/redis.ini
 ln -s ../php-fpm.d/redis.ini /etc/opt/rh/rh-php72/php.d/99-redis.ini
 systemctl restart rh-php72-php-fpm.service
 
 # If you have not yet set a timezone in php.ini
-echo 'date.timezone = "Europe/London"' | tee /etc/opt/rh/rh-php72/php-fpm.d/timezone.ini
+echo 'date.timezone = "Asia/Jakarta"' | tee /etc/opt/rh/rh-php72/php-fpm.d/timezone.ini
 ln -s ../php-fpm.d/timezone.ini /etc/opt/rh/rh-php72/php.d/99-timezone.ini
 
 # Recommended: Change some PHP settings in /etc/opt/rh/rh-php72/php.ini
